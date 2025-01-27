@@ -10,12 +10,12 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 import streamlit as st
 
 # llm
-hf_model = 'microsoft/Phi-3.5-mini-instruct' # 'mistralai/Mistral-7B-Instruct-v0.3"
+hf_model = 'mistralai/Mistral-7B-Instruct-v0.3' # 'microsoft/Phi-3.5-mini-instruct'
 llm = HuggingFaceEndpoint(repo_id=hf_model)
 
 # embeddings
 embedding_model = 'sentence-transformers/all-MiniLM-l6-v2'
-embeddings_folder = '/content/'
+embeddings_folder = 'data/cache/'
 
 embeddings = HuggingFaceEmbeddings(
     model_name=embedding_model
@@ -29,17 +29,23 @@ vector_db = FAISS.load_local('data/CIA_faiss_index', embeddings, allow_dangerous
 retriever = vector_db.as_retriever(search_kwargs={"k": 2})
 
 # prompt
+<<<<<<< HEAD
+template = template = """You are a nice chatbot having a conversation with a human. Answer the question based only on the following context and previous conversation. 
+Keep your answers short and succinct.
+
+=======
 template = """You are a nice chatbot having a conversation with a human.
 Answer the question based only on the following context and previous conversation.
-Keep your answers short, succinct and informative, so that the couterpart can learn from you.
+Keep your answers short, succinct, informative, and clear, so that the couterpart can learn from you.
+>>>>>>> 978ddff722f231e19c0020d6978b7f418c31ae74
 
 Previous conversation:
 {chat_history}
 
-Context to answer question:
+Context:
 {context}
 
-New human question: {input}
+Question: {input}
 Response:"""
 
 prompt = ChatPromptTemplate.from_messages([
@@ -60,7 +66,57 @@ rag_bot = init_bot()
 
 ##### streamlit #####
 
-st.title('CIA World Factbook 2018-2019')
+import streamlit as st
+
+# Title
+st.title("CIA World Factbook 2023-2024")
+
+# Subtitle
+st.subheader("Your Gateway to Global Information")
+
+# Introduction Text
+st.markdown("""
+Welcome to the **CIA World Factbook Explorer**! This app allows you to explore detailed information about countries worldwide, 
+including demographics, geography, economy, and more.
+
+
+**Start exploring now and unlock the power of global knowledge!**
+""")
+
+# Add an Image or Logo
+st.image("Photo/CIA World Factbook-2023-2024.jpg", caption="CIA World Factbook 2023-2024", use_column_width=True)
+
+
+# Footer with a Call to Action
+st.markdown("""
+---
+**Explore the World. Discover the Data. Shape the Future.**
+# """)
+# # Resize and Enhance Image
+# def process_image(input_path, output_path, width):
+#     # Open the image
+#     image = Image.open(input_path)
+    
+#     # Resize the image
+#     aspect_ratio = image.height / image.width
+#     new_height = int(width * aspect_ratio)
+#     resized_image = image.resize((width, new_height))
+    
+#     # Save the resized image
+#     resized_image.save(output_path)
+#     return output_path
+
+# # Paths for the image
+# input_path = "Photo/CIA World Factbook.jpg"
+# output_path = "Photo/CIA_World_Factbook_Resized.jpg"
+# processed_image_path = process_image(input_path, output_path, width=800)  # Set width to 800 pixels
+
+# # Streamlit App
+# st.title("🌍 CIA World Factbook 2023-2024")
+# st.image(processed_image_path, caption="CIA World Factbook 2023-2024")
+
+
+
 
 # Initialise chat history
 # Chat history saves the previous messages to be displayed
@@ -82,13 +138,13 @@ if prompt := st.chat_input('Curious minds wanted!'):
     st.session_state.messages.append({'role': 'human', 'content': prompt})
 
     # Begin spinner before answering question so it's there for the duration
-    with st.spinner('Asking CIA...'):
+    with st.spinner('Thinking...'):
 
         # send question to chain to get answer
         answer = rag_bot.invoke({'input': prompt, 'chat_history': st.session_state.messages, 'context': retriever})
 
         # extract answer from dictionary returned by chain
-        response = answer['answer']
+        response = answer.get('answer', 'Sorry, I couldn’t find an answer.')
 
         # Display chatbot response in chat message container
         with st.chat_message('assistant'):
